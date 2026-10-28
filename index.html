@@ -1,9 +1,17 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-y53VaIlSly6SPKj4vB+m2AYCg6ppLts8MnswUyRtyS0=' https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js; style-src 'unsafe-inline'; img-src data: blob:; media-src blob: mediastream:; connect-src 'none'; form-action https://read.tc.edu.tw; base-uri 'none'"><meta name="referrer" content="no-referrer"><title>借書認證隨身查</title><style>
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-ibBDZb5LwnsrjwRI+ZeIh/aSvKyx02TQuGiB6VFd2jM=' https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js; style-src 'unsafe-inline'; img-src data: blob:; media-src blob: mediastream:; connect-src 'none'; form-action https://read.tc.edu.tw; base-uri 'none'"><meta name="referrer" content="no-referrer"><title>借書認證隨身查</title><style>
 :root{font-family:system-ui,sans-serif;color-scheme:light dark}body{max-width:640px;margin:auto;padding:20px;font-size:18px;line-height:1.6}h1{font-size:28px}input,button{font:inherit;padding:12px;box-sizing:border-box;max-width:100%;margin:6px 0}input[type=text]{width:100%}button{cursor:pointer;border-radius:8px;border:1px solid #888}section{margin:22px 0;padding:16px;border:1px solid #8886;border-radius:12px}#result{white-space:pre-wrap}#info,#notice{font-size:16px}.passed{color:light-dark(#1565c0,#9acbff)}#reader{width:100%}label{display:block}small{font-size:15px}
-</style></head><body><h1>借書認證隨身查</h1><p>匯入已通過書單，在圖書館快速比對。</p>
-<section><label for="file">匯入手機書單 JSON</label><input id="file" type="file" accept="application/json,.json"><p id="info">尚未匯入書單。</p><button id="remove">清除這台手機的書單</button></section>
-<section><form id="search"><label for="keyword">ISBN 或已認證書名</label><input id="keyword" type="text" placeholder="輸入 ISBN 或部分書名" required><button>查詢本機書單</button></form><button id="camera">開啟鏡頭掃 ISBN</button><button id="stop" hidden>停止掃描</button><div id="reader"></div><p id="result" role="status"></p><button id="official">到官方查可否認證</button><p id="notice" role="status"></p></section>
-<small>書單保存在這台裝置的瀏覽器。開啟本頁後，文字查詢可離線使用；重新開啟頁面是否可離線取決於瀏覽器快取。鏡頭需要 HTTPS 或 localhost，首次載入掃描程式需要網路。官方查詢會開啟新頁並需要網路。</small>
+
+body{padding:16px}header{display:flex;align-items:center;justify-content:space-between;gap:8px}h1{font-size:24px}button,input{min-height:44px}button:disabled{opacity:.45;cursor:default}button:focus-visible,input:focus-visible{outline:3px solid light-dark(#1565c0,#9acbff);outline-offset:2px}[hidden]{display:none!important}
+#status{width:100%;text-align:left;border:1px solid currentColor;background:light-dark(#eef6ff,#172b40);color:light-dark(#14599b,#a8d3ff)}#status.warning{background:light-dark(#fff4df,#3b2d16);color:light-dark(#825400,#ffd28a)}#status.imported{color:light-dark(#1565c0,#9acbff)}
+#overlay{position:fixed;inset:0;background:#0008;z-index:10}#drawer{position:fixed;inset:0 0 0 auto;width:min(90vw,400px);box-sizing:border-box;padding:20px;background:light-dark(#fff,#202124);z-index:11;overflow:auto;visibility:hidden;transform:translateX(100%);transition:transform .2s,visibility .2s}#drawer.open{visibility:visible;transform:translateX(0)}body.drawer-open{overflow:hidden}
+.filters,.actions{display:flex;gap:8px;flex-wrap:wrap}.filters button[aria-pressed=true]{background:light-dark(#dbeeff,#254463);border-color:light-dark(#1565c0,#9acbff)}.history-card{border-top:1px solid #8886;padding:16px 0}.history-card h3{font-size:18px;margin:8px 0;overflow-wrap:anywhere}.history-card p{margin:4px 0}.badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:15px;background:light-dark(#e6e6e6,#383838);color:light-dark(#444,#ddd)}.badge.passed{background:light-dark(#e0efff,#183d60);color:light-dark(#1565c0,#9acbff)}.badge.unavailable{background:light-dark(#f2f2f2,#2c2c2c);color:light-dark(#666,#aaa)}#undo-message{padding:8px 0}#history-count{font-size:16px;font-weight:normal}
+@media(prefers-reduced-motion:reduce){#drawer{transition:none}}
+</style></head><body><div id="main"><header><h1>借書認證隨身查</h1><button id="menu" aria-expanded="false" aria-controls="drawer">☰ 書單</button></header>
+<button id="status" aria-controls="drawer">尚未匯入書單，請點右上角『☰ 書單』匯入</button><p id="notice" role="status"></p>
+<section><form id="search"><label for="keyword">ISBN 或已認證書名</label><input id="keyword" type="text" placeholder="輸入 ISBN 或部分書名" required><button id="query" disabled>查詢本機書單</button></form><button id="camera">開啟鏡頭掃 ISBN</button><button id="stop" hidden>停止掃描</button><div id="reader"></div><p id="result" role="status"></p><button id="official">到官方查可否認證</button></section>
+<section aria-labelledby="history-heading"><h2 id="history-heading">掃描紀錄 <span id="history-count">（0 筆）</span></h2><div class="filters" role="group" aria-label="篩選掃描紀錄"><button data-filter="all" aria-pressed="true">全部</button><button data-filter="passed" aria-pressed="false">已認證</button><button data-filter="missing" aria-pressed="false">書單中沒有</button></div><button id="clear-history" disabled>清除全部紀錄</button><div id="undo-message" role="status"><span id="deleted-message"></span> <button id="undo" hidden>復原</button></div><div id="history"></div></section>
+<footer><small>書單保存在這台裝置的瀏覽器。掃描紀錄只存在這台手機的瀏覽器。開啟本頁後，文字查詢可離線使用；重新開啟頁面是否可離線取決於瀏覽器快取。鏡頭需要 HTTPS 或 localhost，首次載入掃描程式需要網路。官方查詢會開啟新頁並需要網路。</small></footer></div>
+<div id="overlay" hidden></div><aside id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-heading" aria-hidden="true" inert><button id="close-drawer">關閉</button><h2 id="drawer-heading">手機書單</h2><label for="file">匯入手機書單 JSON</label><input id="file" type="file" accept="application/json,.json"><p id="info">尚未匯入書單。</p><p id="import-error" role="status"></p><button id="remove" disabled>清除這台手機的書單</button><p>只清除書單，保留掃描紀錄。</p></aside>
 <script>
 const normalize = value => String(value ?? '').replace(/[\s-]/g, '').toUpperCase();
 function isValidIsbn10(value) {
@@ -24,6 +32,110 @@ function toIsbn13(value) {
 }
 const $ = id => document.getElementById(id);
 let data = null, scanner = null, loading = false;
+let history = [], historyFilter = 'all', deleted = null, undoTimer = null;
+// 純函式：驗證、排序、去重及限制歷史筆數，不修改傳入的陣列。
+function validateHistory(value) {
+  if (!Array.isArray(value)) return [];
+  const isIso = value => typeof value === 'string' && Number.isFinite(Date.parse(value)) && new Date(value).toISOString() === value;
+  const valid = value.filter(item => item && typeof item.isbn === 'string' && isValidIsbn13(item.isbn) && /^\d{13}$/.test(item.isbn) && ['scan', 'manual'].includes(item.source) && isIso(item.firstAt) && isIso(item.lastAt) && item.firstAt <= item.lastAt && Number.isSafeInteger(item.count) && item.count > 0 && (item.title === null || typeof item.title === 'string'));
+  const seen = new Set();
+  return valid.slice().sort((a, b) => b.lastAt.localeCompare(a.lastAt)).filter(item => {
+    if (seen.has(item.isbn)) return false;
+    seen.add(item.isbn); return true;
+  }).slice(0, 300).map(({ isbn, source, firstAt, lastAt, count, title }) => ({ isbn, source, firstAt, lastAt, count, title }));
+}
+function updateHistory(items, isbn, source, title, now) {
+  const previous = items.find(item => item.isbn === isbn);
+  const entry = { isbn, source, firstAt: previous ? previous.firstAt : now, lastAt: now, count: previous ? Math.min(previous.count + 1, Number.MAX_SAFE_INTEGER) : 1, title };
+  return [entry, ...items.filter(item => item.isbn !== isbn)].slice(0, 300);
+}
+function historyStatus(isbn, bookList) {
+  if (!bookList) return { state: 'unavailable', title: null };
+  const matches = bookList.books.filter(book => book.isbn === isbn);
+  return { state: matches.length ? 'passed' : 'missing', title: matches.length ? matches.map(book => book.title).join('、') : null };
+}
+function setDrawer(open) {
+  $('drawer').classList.toggle('open', open);
+  $('drawer').inert = !open;
+  $('drawer').setAttribute('aria-hidden', String(!open));
+  $('main').inert = open;
+  $('overlay').hidden = !open;
+  $('menu').setAttribute('aria-expanded', String(open));
+  document.body.classList.toggle('drawer-open', open);
+  (open ? $('close-drawer') : $('menu')).focus();
+}
+$('menu').onclick = () => setDrawer(true);
+$('status').onclick = () => setDrawer(true);
+$('close-drawer').onclick = () => setDrawer(false);
+$('overlay').onclick = () => setDrawer(false);
+document.addEventListener('keydown', event => {
+  if ($('menu').getAttribute('aria-expanded') !== 'true') return;
+  if (event.key === 'Escape') { event.preventDefault(); setDrawer(false); }
+  if (event.key === 'Tab') {
+    const controls = [...$('drawer').querySelectorAll('button:not(:disabled), input:not(:disabled)')];
+    const first = controls[0], last = controls[controls.length - 1];
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  }
+});
+function formatDate(value, includeYear = false) {
+  const date = new Date(value), pad = n => String(n).padStart(2, '0');
+  return `${includeYear ? date.getFullYear() + '/' : ''}${date.getMonth() + 1}/${date.getDate()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+function saveHistory() {
+  try { localStorage.setItem('scan-history', JSON.stringify(history)); }
+  catch { $('notice').textContent = '無法儲存掃描紀錄；本次開啟期間仍可使用，重新開啟後可能恢復舊紀錄。'; }
+}
+function element(tag, text, className) {
+  const node = document.createElement(tag);
+  if (text !== undefined) node.textContent = text;
+  if (className) node.className = className;
+  return node;
+}
+function resetUndo() {
+  clearTimeout(undoTimer); deleted = null; $('undo').hidden = true; $('deleted-message').textContent = '';
+}
+function renderHistory() {
+  $('history').replaceChildren();
+  $('history-count').textContent = `（${history.length} 筆）`;
+  $('clear-history').disabled = !history.length;
+  let shown = 0;
+  for (const item of history) {
+    const status = historyStatus(item.isbn, data);
+    if (historyFilter !== 'all' && historyFilter !== status.state) continue;
+    shown++;
+    const card = element('article', undefined, 'history-card');
+    card.append(element('span', { passed: '✓ 已認證', missing: '書單中沒有', unavailable: '未匯入書單' }[status.state], `badge ${status.state}`), element('h3', status.title ?? item.title ?? '（書名不明）'), element('p', `ISBN：${item.isbn}`), element('p', `${formatDate(item.lastAt)}・${item.source === 'scan' ? '掃描' : '手動'}${item.count > 1 ? `・查過 ${item.count} 次` : ''}`));
+    const actions = element('div', undefined, 'actions');
+    const again = element('button', '再查一次');
+    again.onclick = () => { $('keyword').value = item.isbn; query(); };
+    const official = element('button', '官方查詢'); official.onclick = () => officialQuery(item.isbn);
+    const remove = element('button', '刪除');
+    remove.onclick = () => {
+      resetUndo(); deleted = { ...item }; history = history.filter(entry => entry.isbn !== item.isbn);
+      saveHistory(); renderHistory(); $('deleted-message').textContent = '已刪除・'; $('undo').hidden = false;
+      undoTimer = setTimeout(resetUndo, 5000);
+    };
+    actions.append(again, official, remove); card.append(actions); $('history').append(card);
+  }
+  if (!shown) $('history').append(element('p', history.length ? '沒有符合篩選的紀錄' : '還沒有掃描紀錄'));
+}
+$('undo').onclick = () => {
+  if (!deleted) return;
+  const current = history.find(item => item.isbn === deleted.isbn);
+  const restored = current ? { ...current, firstAt: current.firstAt < deleted.firstAt ? current.firstAt : deleted.firstAt, count: Math.min(current.count + deleted.count, Number.MAX_SAFE_INTEGER) } : deleted;
+  history = validateHistory([restored, ...history.filter(item => item.isbn !== restored.isbn)]);
+  resetUndo(); saveHistory(); renderHistory();
+};
+$('clear-history').onclick = () => {
+  if (!history.length || !confirm('確定清除全部掃描紀錄？')) return;
+  history = []; resetUndo(); saveHistory(); renderHistory();
+};
+for (const button of document.querySelectorAll('[data-filter]')) button.onclick = () => {
+  historyFilter = button.dataset.filter;
+  for (const option of document.querySelectorAll('[data-filter]')) option.setAttribute('aria-pressed', String(option === button));
+  renderHistory();
+};
 function validate(value) {
   if (!value || value.version !== 1 || typeof value.exportedAt !== 'string' || !Number.isFinite(Date.parse(value.exportedAt)) || !Array.isArray(value.books) || value.books.length > 100000) throw new Error('書單格式或版本不正確。');
   const books = value.books.map(b => {
@@ -33,10 +145,17 @@ function validate(value) {
   return { version: 1, exportedAt: value.exportedAt, books };
 }
 function showInfo() {
-  $('info').textContent = data ? `匯出時間：${new Date(data.exportedAt).toLocaleString('zh-TW')}，共 ${data.books.length} 本。${Date.now() - Date.parse(data.exportedAt) > 14 * 86400000 ? '書單可能過舊' : ''}` : '尚未匯入書單。';
+  const stale = data && Date.now() - Date.parse(data.exportedAt) > 14 * 86400000;
+  $('info').textContent = data ? `匯出時間：${formatDate(data.exportedAt, true)}，共 ${data.books.length} 本。${stale ? '書單可能過舊' : ''}` : '尚未匯入書單。';
+  $('status').textContent = data ? `已匯入 ${data.books.length} 本已通過書籍・匯出於 ${formatDate(data.exportedAt, true)}${stale ? '（書單可能過舊）' : ''}` : '尚未匯入書單，請點右上角『☰ 書單』匯入';
+  $('status').className = stale ? 'warning' : data ? 'imported' : '';
+  $('remove').disabled = !data; $('query').disabled = !data;
+  renderHistory();
 }
 try { const saved = localStorage.getItem('reading-passed'); if (saved) data = validate(JSON.parse(saved)); }
 catch { $('notice').textContent = '無法讀取儲存的書單，請重新匯入。'; }
+try { const saved = localStorage.getItem('scan-history'); if (saved) history = validateHistory(JSON.parse(saved)); }
+catch { $('notice').textContent += '無法讀取掃描紀錄，本次仍可新增紀錄。'; }
 showInfo();
 $('file').onchange = async () => {
   try {
@@ -46,23 +165,35 @@ $('file').onchange = async () => {
     data = imported;
     try { localStorage.setItem('reading-passed', JSON.stringify(data)); $('notice').textContent = '匯入完成。'; }
     catch { $('notice').textContent = '匯入完成，但無法儲存；本次開啟期間仍可查詢。'; }
-    showInfo();
-  } catch (e) { $('notice').textContent = e instanceof SyntaxError ? 'JSON 格式不正確。' : e.message; }
+    showInfo(); $('import-error').textContent = ''; setDrawer(false);
+  } catch (e) { $('notice').textContent = e instanceof SyntaxError ? 'JSON 格式不正確。' : e.message; $('import-error').textContent = $('notice').textContent; }
+  finally { $('file').value = ''; }
 };
-$('remove').onclick = () => { data = null; try { localStorage.removeItem('reading-passed'); $('notice').textContent = '已清除書單。'; } catch { $('notice').textContent = '無法清除瀏覽器儲存空間。'; } showInfo(); $('result').textContent = ''; };
-function query() {
+$('remove').onclick = () => {
+  data = null;
+  try { localStorage.removeItem('reading-passed'); $('notice').textContent = '已清除書單，掃描紀錄仍保留。'; }
+  catch { $('notice').textContent = '無法清除瀏覽器儲存空間；本次已移除書單，重新開啟後可能恢復。'; }
+  $('import-error').textContent = $('notice').textContent;
+  showInfo(); $('result').textContent = '';
+};
+function query(source = 'manual') {
   const keyword = $('keyword').value.trim(), isbn = toIsbn13(keyword);
   $('result').className = '';
   if (!keyword) { $('result').textContent = '請輸入 ISBN 或書名。'; return; }
-  if (!data) { $('result').textContent = '請先匯入書單。'; return; }
   if (!isbn && /^[\dXx\s-]+$/.test(keyword)) { $('result').textContent = 'ISBN 檢查碼不正確。'; return; }
+  if (isbn) {
+    history = updateHistory(history, isbn, source, historyStatus(isbn, data).title, new Date().toISOString());
+    saveHistory(); renderHistory();
+  }
+  if (!data) { $('result').textContent = '尚未匯入書單'; return; }
   const books = data.books.filter(b => isbn ? b.isbn === isbn : b.title.toLocaleLowerCase().includes(keyword.toLocaleLowerCase()));
   $('result').textContent = books.length ? books.map(b => `✓ 已認證：${b.title}`).join('\n') : '書單中沒有這本';
   if (books.length) $('result').className = 'passed';
 }
-$('search').onsubmit = e => { e.preventDefault(); query(); };
-$('official').onclick = () => {
-  const keyword = $('keyword').value.trim(), isbn = toIsbn13(keyword);
+$('search').onsubmit = e => { e.preventDefault(); if (data) query(); };
+$('official').onclick = () => officialQuery($('keyword').value.trim());
+function officialQuery(keyword) {
+  const isbn = toIsbn13(keyword);
   if (!keyword) { $('notice').textContent = '請先輸入 ISBN 或書名。'; return; }
   if (!isbn && /^[\dXx\s-]+$/.test(keyword)) { $('notice').textContent = 'ISBN 檢查碼不正確。'; return; }
   const form = document.createElement('form'); form.method = 'POST'; form.target = '_blank'; form.rel = 'noopener';
@@ -70,7 +201,7 @@ $('official').onclick = () => {
   const fields = { keyword: isbn ?? keyword, submit_item: '搜尋GO！' }; if (!isbn) fields.seek = 'bookname';
   for (const [name, value] of Object.entries(fields)) { const input = document.createElement('input'); input.type = 'hidden'; input.name = name; input.value = value; form.append(input); }
   document.body.append(form); form.submit(); form.remove();
-};
+}
 async function stopCamera() { if (scanner) { try { await scanner.stop(); scanner.clear(); } catch {} scanner = null; } $('stop').hidden = true; $('camera').disabled = false; }
 $('stop').onclick = stopCamera;
 $('camera').onclick = async () => {
@@ -80,7 +211,7 @@ $('camera').onclick = async () => {
     scanner = new Html5Qrcode('reader', { formatsToSupport: [Html5QrcodeSupportedFormats.EAN_13] });
     let accepted = false;
     await scanner.start({ facingMode: 'environment' }, { fps: 10, qrbox: { width: 250, height: 140 } }, value => {
-      if (accepted || !toIsbn13(value)) return; accepted = true; $('keyword').value = value; query(); stopCamera();
+      if (accepted || !toIsbn13(value)) return; accepted = true; $('keyword').value = value; query('scan'); stopCamera();
     }, () => {});
     $('stop').hidden = false; $('notice').textContent = '請將書背的一維條碼置於鏡頭中央。';
   } catch { $('notice').textContent = '無法開啟鏡頭，請允許相機權限並確認網路，或手動輸入 ISBN。'; await stopCamera(); }
