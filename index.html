@@ -1,4 +1,4 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="light dark"><meta name="theme-color" content="#FFF6E5" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#1A1524" media="(prefers-color-scheme: dark)"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-7dIFB3CkViTMh8ibxIdVyZzRwTNU0OaJUSvxApm7b60=' https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js; style-src 'unsafe-inline'; img-src data: blob:; media-src blob: mediastream:; connect-src 'none'; form-action https://read.tc.edu.tw; base-uri 'none'"><meta name="referrer" content="no-referrer"><title>借書認證隨身查</title><style>
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="light dark"><meta name="theme-color" content="#FFF6E5" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#1A1524" media="(prefers-color-scheme: dark)"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-03xplBDRSmSOCKu05Oo6cFmzFG8rnYNrK/wpE8etZ+8=' https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js; style-src 'unsafe-inline'; img-src data: blob:; media-src blob: mediastream:; connect-src 'none'; form-action https://read.tc.edu.tw; base-uri 'none'"><meta name="referrer" content="no-referrer"><title>借書認證隨身查</title><style>
 :root{
   --bg:#FFF6E5;--surface:#FFFFFF;--surface-2:#FFEFD3;--ink:#2B2140;--muted:#5F5370;--edge:#2B2140;--drop:#2B2140;
   --brand:#FF8A3D;--on-brand:#2B2140;
@@ -53,8 +53,8 @@ h1{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:800;lette
 #camera .icon{width:58px;height:58px;stroke-width:2}
 #camera small{font-size:15px;font-weight:600}
 #scan:has(#stop:not([hidden])) #camera{display:none}
-#reader{margin-top:4px;border-radius:var(--radius-sm);overflow:hidden;background:#000}
-#reader:empty{display:none}
+#reader{width:100%;border-radius:var(--radius-sm);overflow:hidden;background:#000}
+#reader video{display:block;width:100%!important;height:auto!important}
 #stop{width:100%;margin-top:12px}
 .or{display:flex;align-items:center;gap:12px;margin:18px 0 12px;color:var(--muted);font-size:15px;font-weight:600}
 .or::before,.or::after{content:"";flex:1;border-top:2px dashed var(--edge);opacity:.35}
@@ -387,6 +387,7 @@ $('camera').onclick = async () => {
       if (accepted || !toIsbn13(value)) return; accepted = true; $('keyword').value = value; query('scan'); stopCamera();
     }, () => {});
     $('stop').hidden = false; $('notice').textContent = '請將書背的一維條碼置於鏡頭中央。';
+    $('reader').scrollIntoView?.({ block: 'center' });
   } catch { $('notice').textContent = '無法開啟鏡頭，請允許相機權限並確認網路，或手動輸入 ISBN。'; await stopCamera(); }
   finally { loading = false; }
 };
