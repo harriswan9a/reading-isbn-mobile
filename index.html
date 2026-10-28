@@ -1,0 +1,89 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-y53VaIlSly6SPKj4vB+m2AYCg6ppLts8MnswUyRtyS0=' https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js; style-src 'unsafe-inline'; img-src data: blob:; media-src blob: mediastream:; connect-src 'none'; form-action https://read.tc.edu.tw; base-uri 'none'"><meta name="referrer" content="no-referrer"><title>借書認證隨身查</title><style>
+:root{font-family:system-ui,sans-serif;color-scheme:light dark}body{max-width:640px;margin:auto;padding:20px;font-size:18px;line-height:1.6}h1{font-size:28px}input,button{font:inherit;padding:12px;box-sizing:border-box;max-width:100%;margin:6px 0}input[type=text]{width:100%}button{cursor:pointer;border-radius:8px;border:1px solid #888}section{margin:22px 0;padding:16px;border:1px solid #8886;border-radius:12px}#result{white-space:pre-wrap}#info,#notice{font-size:16px}.passed{color:light-dark(#1565c0,#9acbff)}#reader{width:100%}label{display:block}small{font-size:15px}
+</style></head><body><h1>借書認證隨身查</h1><p>匯入已通過書單，在圖書館快速比對。</p>
+<section><label for="file">匯入手機書單 JSON</label><input id="file" type="file" accept="application/json,.json"><p id="info">尚未匯入書單。</p><button id="remove">清除這台手機的書單</button></section>
+<section><form id="search"><label for="keyword">ISBN 或已認證書名</label><input id="keyword" type="text" placeholder="輸入 ISBN 或部分書名" required><button>查詢本機書單</button></form><button id="camera">開啟鏡頭掃 ISBN</button><button id="stop" hidden>停止掃描</button><div id="reader"></div><p id="result" role="status"></p><button id="official">到官方查可否認證</button><p id="notice" role="status"></p></section>
+<small>書單保存在這台裝置的瀏覽器。開啟本頁後，文字查詢可離線使用；重新開啟頁面是否可離線取決於瀏覽器快取。鏡頭需要 HTTPS 或 localhost，首次載入掃描程式需要網路。官方查詢會開啟新頁並需要網路。</small>
+<script>
+const normalize = value => String(value ?? '').replace(/[\s-]/g, '').toUpperCase();
+function isValidIsbn10(value) {
+  const s = normalize(value);
+  return /^\d{9}[\dX]$/.test(s) && [...s].reduce((n, c, i) => n + (c === 'X' ? 10 : Number(c)) * (10 - i), 0) % 11 === 0;
+}
+function isValidIsbn13(value) {
+  const s = normalize(value);
+  return /^97[89]\d{10}$/.test(s) && [...s].reduce((n, c, i) => n + Number(c) * (i % 2 ? 3 : 1), 0) % 10 === 0;
+}
+function toIsbn13(value) {
+  const s = normalize(value);
+  if (isValidIsbn13(s)) return s;
+  if (!isValidIsbn10(s)) return null;
+  const base = '978' + s.slice(0, 9);
+  const sum = [...base].reduce((n, c, i) => n + Number(c) * (i % 2 ? 3 : 1), 0);
+  return base + (10 - sum % 10) % 10;
+}
+const $ = id => document.getElementById(id);
+let data = null, scanner = null, loading = false;
+function validate(value) {
+  if (!value || value.version !== 1 || typeof value.exportedAt !== 'string' || !Number.isFinite(Date.parse(value.exportedAt)) || !Array.isArray(value.books) || value.books.length > 100000) throw new Error('書單格式或版本不正確。');
+  const books = value.books.map(b => {
+    if (!b || typeof b.bookId !== 'string' || !/^\d+$/.test(b.bookId) || typeof b.title !== 'string' || b.title.length > 2000 || b.isbn !== null && (typeof b.isbn !== 'string' || !toIsbn13(b.isbn))) throw new Error('書單內容不正確。');
+    return { bookId: b.bookId, title: b.title, isbn: b.isbn === null ? null : toIsbn13(b.isbn) };
+  });
+  return { version: 1, exportedAt: value.exportedAt, books };
+}
+function showInfo() {
+  $('info').textContent = data ? `匯出時間：${new Date(data.exportedAt).toLocaleString('zh-TW')}，共 ${data.books.length} 本。${Date.now() - Date.parse(data.exportedAt) > 14 * 86400000 ? '書單可能過舊' : ''}` : '尚未匯入書單。';
+}
+try { const saved = localStorage.getItem('reading-passed'); if (saved) data = validate(JSON.parse(saved)); }
+catch { $('notice').textContent = '無法讀取儲存的書單，請重新匯入。'; }
+showInfo();
+$('file').onchange = async () => {
+  try {
+    const file = $('file').files[0]; if (!file) return;
+    if (file.size > 20000000) throw new Error('書單檔案過大。');
+    const imported = validate(JSON.parse(await file.text()));
+    data = imported;
+    try { localStorage.setItem('reading-passed', JSON.stringify(data)); $('notice').textContent = '匯入完成。'; }
+    catch { $('notice').textContent = '匯入完成，但無法儲存；本次開啟期間仍可查詢。'; }
+    showInfo();
+  } catch (e) { $('notice').textContent = e instanceof SyntaxError ? 'JSON 格式不正確。' : e.message; }
+};
+$('remove').onclick = () => { data = null; try { localStorage.removeItem('reading-passed'); $('notice').textContent = '已清除書單。'; } catch { $('notice').textContent = '無法清除瀏覽器儲存空間。'; } showInfo(); $('result').textContent = ''; };
+function query() {
+  const keyword = $('keyword').value.trim(), isbn = toIsbn13(keyword);
+  $('result').className = '';
+  if (!keyword) { $('result').textContent = '請輸入 ISBN 或書名。'; return; }
+  if (!data) { $('result').textContent = '請先匯入書單。'; return; }
+  if (!isbn && /^[\dXx\s-]+$/.test(keyword)) { $('result').textContent = 'ISBN 檢查碼不正確。'; return; }
+  const books = data.books.filter(b => isbn ? b.isbn === isbn : b.title.toLocaleLowerCase().includes(keyword.toLocaleLowerCase()));
+  $('result').textContent = books.length ? books.map(b => `✓ 已認證：${b.title}`).join('\n') : '書單中沒有這本';
+  if (books.length) $('result').className = 'passed';
+}
+$('search').onsubmit = e => { e.preventDefault(); query(); };
+$('official').onclick = () => {
+  const keyword = $('keyword').value.trim(), isbn = toIsbn13(keyword);
+  if (!keyword) { $('notice').textContent = '請先輸入 ISBN 或書名。'; return; }
+  if (!isbn && /^[\dXx\s-]+$/.test(keyword)) { $('notice').textContent = 'ISBN 檢查碼不正確。'; return; }
+  const form = document.createElement('form'); form.method = 'POST'; form.target = '_blank'; form.rel = 'noopener';
+  form.action = `https://read.tc.edu.tw/${isbn ? 'isbn_scan.php' : 'book_check_2020.php'}`;
+  const fields = { keyword: isbn ?? keyword, submit_item: '搜尋GO！' }; if (!isbn) fields.seek = 'bookname';
+  for (const [name, value] of Object.entries(fields)) { const input = document.createElement('input'); input.type = 'hidden'; input.name = name; input.value = value; form.append(input); }
+  document.body.append(form); form.submit(); form.remove();
+};
+async function stopCamera() { if (scanner) { try { await scanner.stop(); scanner.clear(); } catch {} scanner = null; } $('stop').hidden = true; $('camera').disabled = false; }
+$('stop').onclick = stopCamera;
+$('camera').onclick = async () => {
+  if (loading || scanner) return; loading = true; $('camera').disabled = true;
+  try {
+    if (!window.Html5Qrcode) await new Promise((resolve, reject) => { const script = document.createElement('script'); script.src = 'https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js'; script.integrity = 'sha384-c9d8RFSL+u3exBOJ4Yp3HUJXS4znl9f+z66d1y54ig+ea249SpqR+w1wyvXz/lk+'; script.crossOrigin = 'anonymous'; script.onload = resolve; script.onerror = () => { script.remove(); reject(new Error('無法載入掃描程式，請確認網路。')); }; document.head.append(script); });
+    scanner = new Html5Qrcode('reader', { formatsToSupport: [Html5QrcodeSupportedFormats.EAN_13] });
+    let accepted = false;
+    await scanner.start({ facingMode: 'environment' }, { fps: 10, qrbox: { width: 250, height: 140 } }, value => {
+      if (accepted || !toIsbn13(value)) return; accepted = true; $('keyword').value = value; query(); stopCamera();
+    }, () => {});
+    $('stop').hidden = false; $('notice').textContent = '請將書背的一維條碼置於鏡頭中央。';
+  } catch { $('notice').textContent = '無法開啟鏡頭，請允許相機權限並確認網路，或手動輸入 ISBN。'; await stopCamera(); }
+  finally { loading = false; }
+};
+</script></body></html>
