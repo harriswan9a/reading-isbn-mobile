@@ -1,17 +1,165 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-ibBDZb5LwnsrjwRI+ZeIh/aSvKyx02TQuGiB6VFd2jM=' https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js; style-src 'unsafe-inline'; img-src data: blob:; media-src blob: mediastream:; connect-src 'none'; form-action https://read.tc.edu.tw; base-uri 'none'"><meta name="referrer" content="no-referrer"><title>借書認證隨身查</title><style>
-:root{font-family:system-ui,sans-serif;color-scheme:light dark}body{max-width:640px;margin:auto;padding:20px;font-size:18px;line-height:1.6}h1{font-size:28px}input,button{font:inherit;padding:12px;box-sizing:border-box;max-width:100%;margin:6px 0}input[type=text]{width:100%}button{cursor:pointer;border-radius:8px;border:1px solid #888}section{margin:22px 0;padding:16px;border:1px solid #8886;border-radius:12px}#result{white-space:pre-wrap}#info,#notice{font-size:16px}.passed{color:light-dark(#1565c0,#9acbff)}#reader{width:100%}label{display:block}small{font-size:15px}
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="light dark"><meta name="theme-color" content="#FFF6E5" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#1A1524" media="(prefers-color-scheme: dark)"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-7dIFB3CkViTMh8ibxIdVyZzRwTNU0OaJUSvxApm7b60=' https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js; style-src 'unsafe-inline'; img-src data: blob:; media-src blob: mediastream:; connect-src 'none'; form-action https://read.tc.edu.tw; base-uri 'none'"><meta name="referrer" content="no-referrer"><title>借書認證隨身查</title><style>
+:root{
+  --bg:#FFF6E5;--surface:#FFFFFF;--surface-2:#FFEFD3;--ink:#2B2140;--muted:#5F5370;--edge:#2B2140;--drop:#2B2140;
+  --brand:#FF8A3D;--on-brand:#2B2140;
+  --pass:#1F9D55;--on-pass:#FFFFFF;--pass-soft:#DDF6E6;--pass-ink:#0B5A2E;
+  --explore:#5B4BDB;--on-explore:#FFFFFF;--explore-soft:#ECE8FF;--explore-ink:#3A2BB0;
+  --warn-soft:#FFE7B3;--warn-ink:#6E4300;
+  --danger:#B42318;--danger-soft:#FDE4E1;
+  --neutral-soft:#EFE9F5;--neutral-ink:#4E4460;
+  --focus:#3A2BB0;--scrim:#1A122699;
+  --radius:22px;--radius-sm:14px;--ease-pop:cubic-bezier(.34,1.56,.64,1);
+  font-family:ui-rounded,"SF Pro Rounded","PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
+  color-scheme:light dark;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1A1524;--surface:#262036;--surface-2:#2F2742;--ink:#F5EFFF;--muted:#C4B9D6;--edge:#4B4064;--drop:#0B0812;
+  --brand:#FF9A55;--on-brand:#1A1524;
+  --pass:#4ADE80;--on-pass:#0B2416;--pass-soft:#16352A;--pass-ink:#9AF0BA;
+  --explore:#A89BFF;--on-explore:#1A1524;--explore-soft:#2A2550;--explore-ink:#D6D0FF;
+  --warn-soft:#3D2E10;--warn-ink:#FFD58A;
+  --danger:#FF8A80;--danger-soft:#3D1D1D;
+  --neutral-soft:#322A44;--neutral-ink:#D8CFE6;
+  --focus:#D6D0FF;--scrim:#000000a6;
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-size:17px;line-height:1.55;-webkit-text-size-adjust:100%}
+#main{max-width:560px;margin:0 auto;padding:calc(14px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) calc(40px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+[hidden]{display:none!important}
+h1,h2,h3{margin:0;line-height:1.3}
+.icon{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+button,input{font:inherit;color:inherit;touch-action:manipulation}
+button{min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;border:3px solid var(--edge);border-radius:var(--radius-sm);background:var(--surface);font-weight:700;cursor:pointer;box-shadow:0 3px 0 var(--drop);transition:transform .12s ease-out,box-shadow .12s ease-out,background-color .15s}
+button:active:not(:disabled){transform:translateY(3px);box-shadow:0 0 0 var(--drop)}
+button:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
 
-body{padding:16px}header{display:flex;align-items:center;justify-content:space-between;gap:8px}h1{font-size:24px}button,input{min-height:44px}button:disabled{opacity:.45;cursor:default}button:focus-visible,input:focus-visible{outline:3px solid light-dark(#1565c0,#9acbff);outline-offset:2px}[hidden]{display:none!important}
-#status{width:100%;text-align:left;border:1px solid currentColor;background:light-dark(#eef6ff,#172b40);color:light-dark(#14599b,#a8d3ff)}#status.warning{background:light-dark(#fff4df,#3b2d16);color:light-dark(#825400,#ffd28a)}#status.imported{color:light-dark(#1565c0,#9acbff)}
-#overlay{position:fixed;inset:0;background:#0008;z-index:10}#drawer{position:fixed;inset:0 0 0 auto;width:min(90vw,400px);box-sizing:border-box;padding:20px;background:light-dark(#fff,#202124);z-index:11;overflow:auto;visibility:hidden;transform:translateX(100%);transition:transform .2s,visibility .2s}#drawer.open{visibility:visible;transform:translateX(0)}body.drawer-open{overflow:hidden}
-.filters,.actions{display:flex;gap:8px;flex-wrap:wrap}.filters button[aria-pressed=true]{background:light-dark(#dbeeff,#254463);border-color:light-dark(#1565c0,#9acbff)}.history-card{border-top:1px solid #8886;padding:16px 0}.history-card h3{font-size:18px;margin:8px 0;overflow-wrap:anywhere}.history-card p{margin:4px 0}.badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:15px;background:light-dark(#e6e6e6,#383838);color:light-dark(#444,#ddd)}.badge.passed{background:light-dark(#e0efff,#183d60);color:light-dark(#1565c0,#9acbff)}.badge.unavailable{background:light-dark(#f2f2f2,#2c2c2c);color:light-dark(#666,#aaa)}#undo-message{padding:8px 0}#history-count{font-size:16px;font-weight:normal}
-@media(prefers-reduced-motion:reduce){#drawer{transition:none}}
-</style></head><body><div id="main"><header><h1>借書認證隨身查</h1><button id="menu" aria-expanded="false" aria-controls="drawer">☰ 書單</button></header>
-<button id="status" aria-controls="drawer">尚未匯入書單，請點右上角『☰ 書單』匯入</button><p id="notice" role="status"></p>
-<section><form id="search"><label for="keyword">ISBN 或已認證書名</label><input id="keyword" type="text" placeholder="輸入 ISBN 或部分書名" required><button id="query" disabled>查詢本機書單</button></form><button id="camera">開啟鏡頭掃 ISBN</button><button id="stop" hidden>停止掃描</button><div id="reader"></div><p id="result" role="status"></p><button id="official">到官方查可否認證</button></section>
-<section aria-labelledby="history-heading"><h2 id="history-heading">掃描紀錄 <span id="history-count">（0 筆）</span></h2><div class="filters" role="group" aria-label="篩選掃描紀錄"><button data-filter="all" aria-pressed="true">全部</button><button data-filter="passed" aria-pressed="false">已認證</button><button data-filter="missing" aria-pressed="false">書單中沒有</button></div><button id="clear-history" disabled>清除全部紀錄</button><div id="undo-message" role="status"><span id="deleted-message"></span> <button id="undo" hidden>復原</button></div><div id="history"></div></section>
-<footer><small>書單保存在這台裝置的瀏覽器。掃描紀錄只存在這台手機的瀏覽器。開啟本頁後，文字查詢可離線使用；重新開啟頁面是否可離線取決於瀏覽器快取。鏡頭需要 HTTPS 或 localhost，首次載入掃描程式需要網路。官方查詢會開啟新頁並需要網路。</small></footer></div>
-<div id="overlay" hidden></div><aside id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-heading" aria-hidden="true" inert><button id="close-drawer">關閉</button><h2 id="drawer-heading">手機書單</h2><label for="file">匯入手機書單 JSON</label><input id="file" type="file" accept="application/json,.json"><p id="info">尚未匯入書單。</p><p id="import-error" role="status"></p><button id="remove" disabled>清除這台手機的書單</button><p>只清除書單，保留掃描紀錄。</p></aside>
+header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+h1{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:800;letter-spacing:.02em}
+.logo{width:42px;height:42px;display:grid;place-items:center;border:3px solid var(--edge);border-radius:13px;background:var(--brand);color:var(--on-brand);box-shadow:0 3px 0 var(--drop);transform:rotate(-6deg)}
+#menu{padding:8px 14px;background:var(--surface)}
+#status{width:100%;margin:16px 0 0;justify-content:flex-start;text-align:left;min-height:44px;padding:8px 16px;border-width:2px;border-radius:999px;font-size:15px;font-weight:700;box-shadow:none;background:var(--explore-soft);color:var(--explore-ink)}
+#status::before{content:"";width:10px;height:10px;flex:none;border-radius:50%;background:currentColor}
+#status::after{content:"›";margin-left:auto;font-size:22px;line-height:1}
+#status.imported{background:var(--pass-soft);color:var(--pass-ink)}
+#status.warning{background:var(--warn-soft);color:var(--warn-ink)}
+#notice{margin:10px 0 0;padding:10px 14px;border-radius:var(--radius-sm);background:var(--surface-2);font-size:15px}
+#notice:empty{display:none}
+
+.card{margin:18px 0;padding:18px;background:var(--surface);border:3px solid var(--edge);border-radius:var(--radius);box-shadow:0 5px 0 var(--drop)}
+#camera{width:100%;min-height:156px;flex-direction:column;gap:6px;border-radius:var(--radius);background:var(--brand);color:var(--on-brand);font-size:23px;font-weight:800;box-shadow:0 6px 0 var(--drop)}
+#camera:active:not(:disabled){transform:translateY(6px)}
+#camera .icon{width:58px;height:58px;stroke-width:2}
+#camera small{font-size:15px;font-weight:600}
+#scan:has(#stop:not([hidden])) #camera{display:none}
+#reader{margin-top:4px;border-radius:var(--radius-sm);overflow:hidden;background:#000}
+#reader:empty{display:none}
+#stop{width:100%;margin-top:12px}
+.or{display:flex;align-items:center;gap:12px;margin:18px 0 12px;color:var(--muted);font-size:15px;font-weight:600}
+.or::before,.or::after{content:"";flex:1;border-top:2px dashed var(--edge);opacity:.35}
+#search label{display:block;margin-bottom:6px;font-weight:700}
+#keyword{width:100%;min-height:52px;padding:10px 14px;border:3px solid var(--edge);border-radius:var(--radius-sm);background:var(--bg);font-size:18px}
+#keyword::placeholder{color:var(--muted)}
+.row{display:flex;gap:10px;margin-top:12px}
+.row button{flex:1}
+#query{background:var(--explore-soft);color:var(--explore-ink)}
+
+.result{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:start;margin:18px 0;padding:20px;border:3px solid var(--edge);border-radius:var(--radius);box-shadow:0 5px 0 var(--drop);background:var(--surface-2)}
+.result-icon{grid-row:span 2;width:56px;height:56px;display:grid;place-items:center;border:3px solid var(--edge);border-radius:50%;background:var(--neutral-soft);color:var(--neutral-ink)}
+.result-icon svg{display:none;width:30px;height:30px;stroke-width:3}
+.result.passed .i-pass,.result.missing .i-missing,.result.info .i-info,.result.error .i-info{display:block}
+#result{margin:0;display:flex;flex-direction:column;gap:2px;overflow-wrap:anywhere}
+.result-title{font-size:21px;font-weight:800}
+.result-book{font-size:18px;font-weight:700}
+.result-book::before{content:"《"}.result-book::after{content:"》"}
+#result-hint{margin:0;color:var(--muted);font-size:15px}
+#result-hint:empty{display:none}
+.result-actions{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.result-actions:empty{display:none}
+.result-actions button{flex:1 1 140px}
+.result.passed{background:var(--pass-soft)}
+.result.passed .result-icon{background:var(--pass);color:var(--on-pass)}
+.result.passed .result-title{color:var(--pass-ink)}
+.result.missing{background:var(--explore-soft)}
+.result.missing .result-icon{background:var(--explore);color:var(--on-explore)}
+.result.missing .result-title{color:var(--explore-ink)}
+.result.error{background:var(--danger-soft)}
+.result.error .result-icon{color:var(--danger)}
+.btn-explore{background:var(--explore);color:var(--on-explore)}
+.result.pop{animation:pop .45s var(--ease-pop)}
+.result.passed.pop .i-pass path{stroke-dasharray:24;stroke-dashoffset:24;animation:draw .35s .2s ease-out forwards}
+@keyframes pop{from{transform:scale(.9) translateY(8px);opacity:0}to{transform:none;opacity:1}}
+@keyframes draw{to{stroke-dashoffset:0}}
+
+.history-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:28px}
+.history-head h2{font-size:20px;font-weight:800}
+#history-count{font-size:15px;font-weight:600;color:var(--muted)}
+#clear-history{min-height:44px;padding:6px 10px;border:0;background:none;box-shadow:none;color:var(--danger);font-size:15px}
+.filters{display:flex;gap:4px;margin:12px 0;padding:4px;border:2px solid var(--edge);border-radius:999px;background:var(--surface-2)}
+.filters button{flex:1;min-height:44px;padding:6px 8px;border:2px solid transparent;border-radius:999px;background:none;box-shadow:none;font-size:15px;color:var(--muted)}
+.filters button[aria-pressed=true]{border-color:var(--edge);background:var(--surface);color:var(--ink);box-shadow:0 2px 0 var(--drop)}
+#history{display:flex;flex-direction:column;gap:12px}
+#history>p{margin:0;padding:28px 16px;text-align:center;color:var(--muted);border:2px dashed var(--edge);border-radius:var(--radius);opacity:.85}
+.history-card{padding:14px 16px;background:var(--surface);border:3px solid var(--edge);border-left-width:10px;border-radius:var(--radius-sm);box-shadow:0 3px 0 var(--drop)}
+.history-card.passed{border-left-color:var(--pass)}
+.history-card.missing{border-left-color:var(--explore)}
+.history-card h3{margin:8px 0 2px;font-size:18px;overflow-wrap:anywhere}
+.history-card p{margin:0;color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+.badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:14px;font-weight:700;background:var(--neutral-soft);color:var(--neutral-ink)}
+.badge.passed{background:var(--pass-soft);color:var(--pass-ink)}
+.badge.missing{background:var(--explore-soft);color:var(--explore-ink)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.actions button{min-height:44px;padding:6px 14px;border-width:2px;font-size:15px;box-shadow:0 2px 0 var(--drop)}
+.actions button:last-child{margin-left:auto;color:var(--danger)}
+
+#undo-message{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));z-index:15;display:flex;align-items:center;gap:12px;width:max-content;max-width:calc(100% - 32px);padding:8px 8px 8px 18px;border-radius:999px;background:var(--ink);color:var(--bg);font-weight:700;opacity:0;pointer-events:none;transform:translate(-50%,24px);transition:opacity .2s,transform .2s ease-out}
+#undo-message:has(#undo:not([hidden])){opacity:1;pointer-events:auto;transform:translate(-50%,0)}
+#undo{min-height:44px;padding:6px 16px;border-width:2px;border-radius:999px;background:var(--brand);color:var(--on-brand);box-shadow:none}
+
+.about{margin-top:32px;color:var(--muted);font-size:14px}
+.about summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:700}
+.about p{margin:4px 0 0}
+
+#overlay{position:fixed;inset:0;z-index:20;background:var(--scrim)}
+#drawer{position:fixed;left:0;right:0;bottom:0;z-index:21;max-width:560px;max-height:90dvh;margin:0 auto;overflow:auto;padding:10px max(20px,env(safe-area-inset-right)) calc(28px + env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left));background:var(--surface);border:3px solid var(--edge);border-bottom:0;border-radius:28px 28px 0 0;visibility:hidden;transform:translateY(100%);transition:transform .22s ease-in,visibility .22s}
+#drawer.open{visibility:visible;transform:none;transition:transform .32s cubic-bezier(.2,.9,.25,1.05),visibility .32s}
+#drawer::before{content:"";display:block;width:44px;height:5px;margin:0 auto 10px;border-radius:3px;background:var(--edge);opacity:.35}
+body.drawer-open{overflow:hidden}
+.sheet-head{display:flex;flex-direction:row-reverse;align-items:center;justify-content:space-between;gap:12px}
+.sheet-head h2{font-size:21px;font-weight:800}
+#close-drawer{padding:8px 14px}
+.steps{margin:16px 0;padding:0;list-style:none;counter-reset:step;display:flex;flex-direction:column;gap:10px}
+.steps li{display:flex;gap:12px;align-items:flex-start;font-size:16px}
+.steps li::before{counter-increment:step;content:counter(step);flex:none;width:28px;height:28px;display:grid;place-items:center;border:2px solid var(--edge);border-radius:50%;background:var(--brand);color:var(--on-brand);font-weight:800;font-size:15px}
+.steps code{font-size:14px;overflow-wrap:anywhere}
+.drop{display:block;padding:16px;border:3px dashed var(--edge);border-radius:var(--radius);background:var(--surface-2)}
+.drop label{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:800}
+#file{width:100%;min-height:48px;font-size:15px}
+#file::file-selector-button{margin-right:12px;min-height:44px;padding:8px 14px;border:3px solid var(--edge);border-radius:12px;background:var(--brand);color:var(--on-brand);font:inherit;font-weight:800;cursor:pointer}
+#info{margin:14px 0 0;padding:12px 14px;border-radius:var(--radius-sm);background:var(--pass-soft);color:var(--pass-ink);font-weight:700;font-size:15px}
+#import-error{margin:10px 0 0;padding:10px 14px;border-radius:var(--radius-sm);background:var(--danger-soft);color:var(--danger);font-weight:700;font-size:15px}
+#import-error:empty{display:none}
+.danger-zone{margin-top:24px;padding-top:18px;border-top:2px dashed var(--edge)}
+#remove{width:100%;color:var(--danger)}
+.danger-zone p{margin:8px 0 0;color:var(--muted);font-size:14px}
+
+@media(prefers-reduced-motion:reduce){
+  *,::before,::after{transition:none!important;animation:none!important}
+  .result.passed.pop .i-pass path{stroke-dashoffset:0}
+}
+</style></head><body><div id="main"><header><h1><span class="logo" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>借書認證隨身查</h1><button id="menu" aria-expanded="false" aria-controls="drawer"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 4h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v12a3 3 0 0 1 3-3h7z"/></svg>書單</button></header>
+<button id="status" aria-controls="drawer">尚未匯入書單・點這裡匯入</button><p id="notice" role="status"></p>
+<section id="scan" class="card" aria-label="查詢書籍"><button id="camera"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M8 7v10"/><path d="M12 7v10"/><path d="M16 7v10"/></svg>掃描書背條碼<small>對準書背的 ISBN 條碼</small></button><div id="reader"></div><button id="stop" hidden><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>停止掃描</button>
+<div class="or">或手動輸入</div>
+<form id="search"><label for="keyword">ISBN 或已認證書名</label><input id="keyword" type="text" placeholder="例如 9789570000000 或書名" autocomplete="off" enterkeyhint="search" required><div class="row"><button id="query" disabled><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>查書單</button><button id="official" type="button">到官方查詢</button></div></form></section>
+<div id="result-card" class="result" hidden><span class="result-icon" aria-hidden="true"><svg class="icon i-pass" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><svg class="icon i-missing" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><svg class="icon i-info" viewBox="0 0 24 24"><path d="M12 7v6"/><path d="M12 17h.01"/></svg></span><p id="result" role="status"></p><p id="result-hint"></p><div id="result-actions" class="result-actions"></div></div>
+<section aria-labelledby="history-heading"><div class="history-head"><h2 id="history-heading">掃描紀錄 <span id="history-count">（0 筆）</span></h2><button id="clear-history" disabled>清除全部</button></div><div class="filters" role="group" aria-label="篩選掃描紀錄"><button data-filter="all" aria-pressed="true">全部</button><button data-filter="passed" aria-pressed="false">已認證</button><button data-filter="missing" aria-pressed="false">書單中沒有</button></div><div id="undo-message" role="status"><span id="deleted-message"></span> <button id="undo" hidden>復原</button></div><div id="history"></div></section>
+<details class="about"><summary>關於隱私與離線使用</summary><p>書單與掃描紀錄只存在這台手機的瀏覽器。開啟本頁後，文字查詢可離線使用；重新開啟頁面是否可離線取決於瀏覽器快取。鏡頭需要 HTTPS 或 localhost，首次載入掃描程式需要網路。官方查詢會開啟新頁並需要網路。</p></details></div>
+<div id="overlay" hidden></div><aside id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-heading" aria-hidden="true" inert><div class="sheet-head"><button id="close-drawer"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>關閉</button><h2 id="drawer-heading">手機書單</h2></div>
+<ol class="steps"><li><span>在電腦的擴充功能按「匯出手機書單」</span></li><li><span>把 <code>reading-passed.json</code> 傳到這支手機</span></li><li><span>在下面選擇這個檔案</span></li></ol>
+<div class="drop"><label for="file"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M20 21H4"/></svg>匯入手機書單 JSON</label><input id="file" type="file" accept="application/json,.json"></div><p id="info">尚未匯入書單。</p><p id="import-error" role="status"></p>
+<div class="danger-zone"><button id="remove" disabled>清除這台手機的書單</button><p>只清除書單，保留掃描紀錄。</p></div></aside>
 <script>
 const normalize = value => String(value ?? '').replace(/[\s-]/g, '').toUpperCase();
 function isValidIsbn10(value) {
@@ -104,7 +252,7 @@ function renderHistory() {
     const status = historyStatus(item.isbn, data);
     if (historyFilter !== 'all' && historyFilter !== status.state) continue;
     shown++;
-    const card = element('article', undefined, 'history-card');
+    const card = element('article', undefined, `history-card ${status.state}`);
     card.append(element('span', { passed: '✓ 已認證', missing: '書單中沒有', unavailable: '未匯入書單' }[status.state], `badge ${status.state}`), element('h3', status.title ?? item.title ?? '（書名不明）'), element('p', `ISBN：${item.isbn}`), element('p', `${formatDate(item.lastAt)}・${item.source === 'scan' ? '掃描' : '手動'}${item.count > 1 ? `・查過 ${item.count} 次` : ''}`));
     const actions = element('div', undefined, 'actions');
     const again = element('button', '再查一次');
@@ -113,12 +261,12 @@ function renderHistory() {
     const remove = element('button', '刪除');
     remove.onclick = () => {
       resetUndo(); deleted = { ...item }; history = history.filter(entry => entry.isbn !== item.isbn);
-      saveHistory(); renderHistory(); $('deleted-message').textContent = '已刪除・'; $('undo').hidden = false;
+      saveHistory(); renderHistory(); $('deleted-message').textContent = '已刪除一筆紀錄'; $('undo').hidden = false;
       undoTimer = setTimeout(resetUndo, 5000);
     };
     actions.append(again, official, remove); card.append(actions); $('history').append(card);
   }
-  if (!shown) $('history').append(element('p', history.length ? '沒有符合篩選的紀錄' : '還沒有掃描紀錄'));
+  if (!shown) $('history').append(element('p', history.length ? '沒有符合篩選的紀錄' : '還沒有掃描紀錄，掃一本書試試看！'));
 }
 $('undo').onclick = () => {
   if (!deleted) return;
@@ -147,7 +295,8 @@ function validate(value) {
 function showInfo() {
   const stale = data && Date.now() - Date.parse(data.exportedAt) > 14 * 86400000;
   $('info').textContent = data ? `匯出時間：${formatDate(data.exportedAt, true)}，共 ${data.books.length} 本。${stale ? '書單可能過舊' : ''}` : '尚未匯入書單。';
-  $('status').textContent = data ? `已匯入 ${data.books.length} 本已通過書籍・匯出於 ${formatDate(data.exportedAt, true)}${stale ? '（書單可能過舊）' : ''}` : '尚未匯入書單，請點右上角『☰ 書單』匯入';
+  $('info').hidden = !data;
+  $('status').textContent = data ? `已匯入 ${data.books.length} 本已通過書籍・匯出於 ${formatDate(data.exportedAt, true)}${stale ? '（書單可能過舊）' : ''}` : '尚未匯入書單・點這裡匯入';
   $('status').className = stale ? 'warning' : data ? 'imported' : '';
   $('remove').disabled = !data; $('query').disabled = !data;
   renderHistory();
@@ -174,21 +323,45 @@ $('remove').onclick = () => {
   try { localStorage.removeItem('reading-passed'); $('notice').textContent = '已清除書單，掃描紀錄仍保留。'; }
   catch { $('notice').textContent = '無法清除瀏覽器儲存空間；本次已移除書單，重新開啟後可能恢復。'; }
   $('import-error').textContent = $('notice').textContent;
-  showInfo(); $('result').textContent = '';
+  showInfo(); clearResult();
 };
+function clearResult() {
+  $('result').textContent = ''; $('result-hint').textContent = ''; $('result-actions').replaceChildren(); $('result-card').hidden = true;
+}
+// 結果卡：#result 只放標題與書名（供 role=status 朗讀），提示與按鈕放在旁邊。
+function showResult(state, title, books = [], hint = '', actions = []) {
+  const card = $('result-card');
+  $('result').replaceChildren(element('strong', title, 'result-title'), ...books.map(book => element('span', book, 'result-book')));
+  $('result-hint').textContent = hint;
+  $('result-actions').replaceChildren(...actions);
+  card.className = `result ${state}`; card.hidden = false;
+  void card.offsetWidth; card.classList.add('pop');
+  card.scrollIntoView?.({ block: 'nearest' });
+}
+function officialButton(keyword, label, className) {
+  const button = element('button', label, className); button.onclick = () => officialQuery(keyword);
+  return button;
+}
 function query(source = 'manual') {
   const keyword = $('keyword').value.trim(), isbn = toIsbn13(keyword);
-  $('result').className = '';
-  if (!keyword) { $('result').textContent = '請輸入 ISBN 或書名。'; return; }
-  if (!isbn && /^[\dXx\s-]+$/.test(keyword)) { $('result').textContent = 'ISBN 檢查碼不正確。'; return; }
+  if (!keyword) { showResult('error', '請輸入 ISBN 或書名。'); return; }
+  if (!isbn && /^[\dXx\s-]+$/.test(keyword)) { showResult('error', 'ISBN 檢查碼不正確。', [], '請再核對一次數字，或改用鏡頭掃描。'); return; }
   if (isbn) {
     history = updateHistory(history, isbn, source, historyStatus(isbn, data).title, new Date().toISOString());
     saveHistory(); renderHistory();
   }
-  if (!data) { $('result').textContent = '尚未匯入書單'; return; }
+  if (!data) {
+    const open = element('button', '匯入書單'); open.onclick = () => setDrawer(true);
+    showResult('info', '尚未匯入書單', [], `${isbn ? '已記到掃描紀錄。' : ''}匯入書單後就能比對是否已通過。`, [open, officialButton(keyword, '到官方查詢')]);
+    return;
+  }
   const books = data.books.filter(b => isbn ? b.isbn === isbn : b.title.toLocaleLowerCase().includes(keyword.toLocaleLowerCase()));
-  $('result').textContent = books.length ? books.map(b => `✓ 已認證：${b.title}`).join('\n') : '書單中沒有這本';
-  if (books.length) $('result').className = 'passed';
+  if (books.length) {
+    showResult('passed', '✓ 已認證', books.map(b => b.title), isbn ? '這本已經讀過並通過認證囉！可以挑別本新書。' : `書單裡有 ${books.length} 本符合的已通過書籍。`);
+    globalThis.navigator?.vibrate?.([24, 60, 36]);
+  } else {
+    showResult('missing', isbn ? '書單中沒有這本' : '書單中沒有符合的書', [], '還沒通過認證。到官方查查看這本能不能認證吧！', [officialButton(keyword, '到官方查可否認證', 'btn-explore')]);
+  }
 }
 $('search').onsubmit = e => { e.preventDefault(); if (data) query(); };
 $('official').onclick = () => officialQuery($('keyword').value.trim());
